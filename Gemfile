@@ -14,9 +14,6 @@ gem 'rack-cors'
 gem 'rails', '~> 5.2.0'
 gem 'sentry-raven'
 
-# Elastic Search
-gem 'searchkick'
-
 # Pagination
 gem 'kaminari'
 
