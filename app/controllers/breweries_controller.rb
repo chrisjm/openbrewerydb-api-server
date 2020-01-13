@@ -40,25 +40,17 @@ class BreweriesController < ApplicationController
   # GET /breweries/autocomplete
   def autocomplete
     expires_in 1.day, public: true
-    @breweries = Brewery.search(
-      params[:query],
-      fields: %w[name city state],
-      match: :word_start,
-      limit: 15,
-      load: false,
-      misspellings: { below: 2 }
-    )
+    @breweries = Brewery.autocomplete(params[:query]).page(1).per(15)
     json_response(@breweries.map { |b| { id: b.id, name: b.name } })
   end
 
   # GET /breweries/search
   def search
     expires_in 1.day, public: true
-    @breweries = Brewery.search(
-      params[:query],
-      page: params[:page],
-      per_page: params[:per_page]
-    )
+    @breweries =
+      PgSearch.multisearch(params[:query])
+              .page(params[:page])
+              .per(params[:per_page])
     json_response(@breweries)
   end
 

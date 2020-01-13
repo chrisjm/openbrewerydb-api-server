@@ -1,10 +1,17 @@
 # frozen_string_literal: true
 
 class Brewery < ApplicationRecord
+  include PgSearch::Model
+  multisearchable against: %i[name city state]
+  pg_search_scope :autocomplete, against: %i[name city state], using: {
+    tsearch: { prefix: true },
+    trigram: { threshold: 0.1 }
+  }
+
   acts_as_taggable
 
   # Elastic Search via Searchkick
-  searchkick word_start: %i[name city state]
+  # searchkick word_start: %i[name city state]
 
   geocoded_by :address
   after_validation :geocode
@@ -20,8 +27,7 @@ class Brewery < ApplicationRecord
   scope :by_type, ->(type) { where('lower(brewery_type) = ?', type.downcase) }
   scope :by_tag, ->(tag) { tagged_with(tag.downcase) }
   scope :by_tags, ->(tags) { tagged_with(tags.downcase.split(',')) }
-  scope :by_postal, ->(postal) { where('postal_code LIKE ?', "#{postal}%") } 
-
+  scope :by_postal, ->(postal) { where('postal_code LIKE ?', "#{postal}%") }
 
   def address
     [street, city, state, country].join(', ')
